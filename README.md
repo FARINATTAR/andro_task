@@ -1,9 +1,9 @@
 # E-commerce Admin API
 
-A simple backend API for managing an e-commerce admin system.
+A backend API for managing an e-commerce admin system.
 
-The project is built using FastAPI, SQLAlchemy and SQLite. It currently includes
-database setup and Brand CRUD operations with validation and soft delete.
+Built with FastAPI, SQLAlchemy and SQLite. Currently includes database setup
+and Brand CRUD operations with validation and soft delete.
 
 ## Tech Stack
 
@@ -18,101 +18,154 @@ database setup and Brand CRUD operations with validation and soft delete.
 
 ```text
 app/
-├── main.py
-├── database.py
+├── main.py            # Application entry point
+├── database.py        # Database connection and session setup
 │
 ├── models/
-│   └── brand.py
+│   └── brand.py       # Brand database model
 │
 ├── schemas/
-│   └── brand.py
+│   └── brand.py       # Request and response schemas
 │
 ├── services/
-│   └── brand_service.py
+│   └── brand_service.py   # Business logic
 │
 └── routers/
-    └── brand.py
-Setup
-1. Clone the repository
+    └── brand.py       # API route definitions
+```
+
+## Setup
+
+### 1. Clone the repository
+
+```bash
 git clone <your-repository-url>
 cd ecommerce-admin-api
-2. Create a virtual environment
+```
+
+### 2. Create a virtual environment
+
+```bash
 python -m venv venv
+```
 
-Activate it on Git Bash:
+Activate on Git Bash:
 
+```bash
 source venv/Scripts/activate
-3. Install dependencies
-pip install fastapi uvicorn sqlalchemy pydantic
-4. Run the application
+```
+
+Activate on CMD:
+
+```bash
+venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the application
+
+```bash
 uvicorn app.main:app --reload
+```
 
-The API will run at:
+The API will run at `http://127.0.0.1:8000`
 
-http://127.0.0.1:8000
+## Database
 
-Swagger documentation:
+The project uses SQLite. The database file `ecommerce.db` is created automatically
+when the application starts.
 
-http://127.0.0.1:8000/docs
+SQLAlchemy handles table creation on startup through `Base.metadata.create_all()`.
 
-Database
+## Brand API
 
-The project currently uses SQLite.
+### Endpoints
 
-The database file is:
+| Method   | Endpoint              | Status Code | Description         |
+|----------|-----------------------|-------------|---------------------|
+| `POST`   | `/brands/`            | 201         | Create a brand      |
+| `GET`    | `/brands/`            | 200         | Get all active brands |
+| `GET`    | `/brands/{brand_id}`  | 200         | Get a single brand  |
+| `PATCH`  | `/brands/{brand_id}`  | 200         | Update a brand      |
+| `DELETE` | `/brands/{brand_id}`  | 204         | Soft delete a brand |
 
-ecommerce.db
+### Brand Fields
 
-SQLAlchemy creates the database tables when the application starts.
+| Field         | Type    | Required | Description                    |
+|---------------|---------|----------|--------------------------------|
+| `name`        | string  | Yes      | Brand name (max 100 chars)     |
+| `slug`        | string  | Yes      | URL-friendly identifier        |
+| `description` | string  | No       | Brand description              |
+| `logo_url`    | string  | No       | URL to brand logo              |
+| `is_active`   | boolean | No       | Whether brand is active (default: true) |
 
-Brand API
+### Validation Rules
 
-The current API supports:
+- Brand name is required and cannot exceed 100 characters.
+- Slug must be lowercase and can only contain letters, numbers and hyphens.
+- Brand name and slug must be unique.
+- Deleted brands are excluded from normal GET responses.
 
-Method	Endpoint	Description
-POST	/brands/	Create a brand
-GET	/brands/	Get all active brands
-GET	/brands/{brand_id}	Get a single brand
-PATCH	/brands/{brand_id}	Update a brand
-DELETE	/brands/{brand_id}	Soft delete a brand
-Brand Validation
-Brand name is required.
-Brand name can have a maximum of 100 characters.
-Slug must be lowercase.
-Slug can contain letters, numbers and hyphens.
-Brand name and slug must be unique.
-Deleted brands are not returned by the normal GET APIs.
+Valid slug examples:
 
-Example slug:
-
+```
 nike
 nike-sports
 nike-2026
+```
 
-Invalid examples:
+Invalid slug examples:
 
-Nike
-Nike Sports
-nike_sports
-Soft Delete
+```
+Nike           # uppercase not allowed
+Nike Sports    # spaces not allowed
+nike_sports    # underscores not allowed
+```
 
-Brands are not permanently removed from the database.
+### Example Requests
 
-When a brand is deleted:
+**Create a brand:** `POST /brands/`
 
-is_deleted = True
+```json
+{
+  "name": "Nike",
+  "slug": "nike",
+  "description": "Just Do It",
+  "logo_url": "https://example.com/nike-logo.png",
+  "is_active": true
+}
+```
 
-This keeps the record in the database while hiding it from normal API responses.
+**Update a brand (partial):** `PATCH /brands/1`
 
-API Documentation
+```json
+{
+  "name": "Nike Inc."
+}
+```
+
+## Soft Delete
+
+Brands are not permanently removed from the database. When a brand is deleted,
+the `is_deleted` field is set to `true`. This keeps the record in the database
+while hiding it from normal API responses.
+
+## API Documentation
 
 Swagger UI is available at:
 
+```
 http://127.0.0.1:8000/docs
+```
 
-The API can be tested directly from Swagger.
+The API can be tested directly from the Swagger interface.
 
-Development Note
+## Development Note
 
 AI assistance was used during the development of this project. The generated
 implementation was reviewed and studied to understand the architecture,
